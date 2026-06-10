@@ -1,80 +1,129 @@
-//
-//  ContentView.swift
-//  Medikamenten-Tracker
-//
-//  Created by Andreas Liedke on 02.04.26.
-//
-
 import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var selectedTab = 0
 
     var body: some View {
-        NavigationViewWrapper {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+        ZStack(alignment: .bottom) {
+            // Inhalt
+            Group {
+                switch selectedTab {
+                case 0:
+                    StatusView()
+                case 1:
+                    AddMedicationView()
+                case 2:
+                    SettingsView()
+                default:
+                    StatusView()
                 }
-                .onDelete(perform: deleteItems)
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.bottom, 70)
+
+            // Custom Tab Bar
+            CustomTabBar(selectedTab: $selectedTab)
+        }
+        .background(AppTheme.background)
+        .preferredColorScheme(.dark)
+    }
+}
+
+struct CustomTabBar: View {
+    @Binding var selectedTab: Int
+
+    var body: some View {
+        HStack {
+            TabBarButton(
+                icon: "list.bullet.rectangle",
+                label: "Anzeigen",
+                isSelected: selectedTab == 0
+            ) {
+                selectedTab = 0
+            }
+
+            Spacer()
+
+            TabBarButton(
+                icon: "plus.circle.fill",
+                label: "Erfassen",
+                isSelected: selectedTab == 1
+            ) {
+                selectedTab = 1
+            }
+
+            Spacer()
+
+            TabBarButton(
+                icon: "gearshape",
+                label: "Einstellungen",
+                isSelected: selectedTab == 2
+            ) {
+                selectedTab = 2
             }
         }
+        .padding(.horizontal, 30)
+        .padding(.top, 12)
+        .padding(.bottom, 28)
+        .background(
+            AppTheme.tabBarBackground
+                .clipShape(RoundedCorner(radius: 24, corners: [.topLeft, .topRight]))
+                .shadow(color: .black.opacity(0.3), radius: 10, y: -5)
+        )
     }
+}
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+struct TabBarButton: View {
+    let icon: String
+    let label: String
+    let isSelected: Bool
+    let action: () -> Void
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: isSelected ? .bold : .regular))
+                    .foregroundColor(isSelected ? AppTheme.accentLight : AppTheme.textSecondary)
+                Text(label)
+                    .font(.caption2)
+                    .foregroundColor(isSelected ? AppTheme.accentLight : AppTheme.textSecondary)
             }
+            .frame(maxWidth: .infinity)
         }
     }
 }
 
-fileprivate struct NavigationViewWrapper<Content: View>: View {
-    let content: () -> Content
+struct RoundedCorner: Shape {
+    var radius: CGFloat
+    var corners: UIRectCorner
 
-    var body: some View {
-#if os(macOS)
-        NavigationSplitView {
-            content()
-        } detail: {
-            Text("Select an item")
-        }
-#else
-        content()
-#endif
+    func path(in rect: CGRect) -> Path {
+        #if canImport(UIKit)
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
+        #else
+        return Path(roundedRect: rect, cornerRadius: radius)
+        #endif
     }
 }
+
+#if !canImport(UIKit)
+struct UIRectCorner: OptionSet {
+    let rawValue: Int
+    static let topLeft = UIRectCorner(rawValue: 1 << 0)
+    static let topRight = UIRectCorner(rawValue: 1 << 1)
+    static let bottomLeft = UIRectCorner(rawValue: 1 << 2)
+    static let bottomRight = UIRectCorner(rawValue: 1 << 3)
+}
+#endif
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Medication.self, inMemory: true)
 }
