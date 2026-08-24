@@ -74,6 +74,8 @@ enum BackupManager {
             importedCount += 1
         }
 
+        WidgetDataExporter.export(from: context)
+
         return importedCount
     }
 }

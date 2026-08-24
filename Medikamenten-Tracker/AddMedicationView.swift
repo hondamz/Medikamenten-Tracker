@@ -33,6 +33,7 @@ struct AddMedicationView: View {
                                     editingMedication = medication
                                 } onDelete: {
                                     modelContext.delete(medication)
+                                    WidgetDataExporter.export(from: modelContext)
                                 }
                             }
                         }
@@ -63,6 +64,7 @@ struct AddMedicationView: View {
                         intakeTimes: intakeTimes
                     )
                     modelContext.insert(med)
+                    WidgetDataExporter.export(from: modelContext)
                 }
             }
             .sheet(item: $editingMedication) { medication in
@@ -73,6 +75,7 @@ struct AddMedicationView: View {
                     medication.dailyDosage = dailyDosage
                     medication.isOnDemand = isOnDemand
                     medication.intakeTimes = intakeTimes
+                    WidgetDataExporter.export(from: modelContext)
                 }
             }
         }

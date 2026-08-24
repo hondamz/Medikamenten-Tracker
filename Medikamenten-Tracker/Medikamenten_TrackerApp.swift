@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct Medikamenten_TrackerApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Medication.self,
@@ -37,7 +39,17 @@ struct Medikamenten_TrackerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    WidgetDataExporter.export(from: sharedModelContainer.mainContext)
+                }
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background || newPhase == .inactive {
+                Task { @MainActor in
+                    WidgetDataExporter.export(from: sharedModelContainer.mainContext)
+                }
+            }
+        }
     }
 }

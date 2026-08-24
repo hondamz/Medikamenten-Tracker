@@ -4,6 +4,14 @@ Eine iOS-App (SwiftUI / SwiftData) zur Verwaltung von Medikamenten. Sie zeigt f�
 
 ## Funktionsumfang
 
+### Home-Screen-Widgets (ab V1.2)
+Zwei Widgets stehen für den iPhone-Home-Screen zur Verfügung:
+
+- **Nächste Engpässe** (medium / large) – listet alle Medikamente auf, die in den kommenden 4 Wochen aufgebraucht sind, sortiert nach Reichweite, mit Datum und Farbpunkt (🔴 / 🟠 / 🟡 / 🟢).
+- **Erster Engpass** (small) – zeigt das Medikament mit der kürzesten Reichweite und die verbleibenden Tage bis zum Aufbrauchen, ausgehend vom aktuellen Datum.
+
+Die Widgets aktualisieren sich automatisch stündlich sowie nach jeder Datenänderung in der App.
+
 ### Navigation
 Eine fest am unteren Rand verankerte Tab-Bar mit drei Hauptbereichen:
 - **Anzeigen** – Status und Kalenderansicht
@@ -80,8 +88,19 @@ Bei jedem Bildschirmaufruf wird neu berechnet:
 | `BackupManager.swift` | Import/Export als JSON |
 | `SettingsView.swift` | Einstellungen inkl. Default-Speicherpfad |
 | `Theme.swift` | Farb- und Style-Definitionen |
+| `MedicationSnapshot.swift` | Geteiltes Datenmodell + App-Group-Container-Zugriff (App + Widget) |
+| `WidgetDataExporter.swift` | Schreibt Snapshot in App-Group-Container und triggert Widget-Reload |
+| `MedikamentenWidget/MedikamentenWidget.swift` | Widget-Extension mit beiden Widgets |
 
 ## Versionshistorie
+
+### V1.2
+- Zwei neue Home-Screen-Widgets:
+  - **Nächste Engpässe** (medium/large) – Medikamente mit Aufbrauchdatum innerhalb der nächsten 4 Wochen
+  - **Erster Engpass** (small) – Tage bis das nächste Medikament aufgebraucht ist
+- App-Group `group.al.Medikamenten-Tracker` zur Datenfreigabe zwischen App und Widget
+- Snapshot-basierte Aktualisierung: App schreibt nach jeder Datenänderung und beim Wechsel in den Hintergrund
+- Widget-Berechnungen erfolgen mit dem aktuellen Datum zum Zeitpunkt der Anzeige
 
 ### V1.1
 - Restmengen werden bei jedem Bildschirmaufruf zum aktuellen Datum neu berechnet
